@@ -102,6 +102,46 @@ if (process.env.DEBUG) {
   logger.level = 'verbose';
 }
 
+// Parse application/json request data.
+app.use(bodyParser.json());
+
+// Parse application/xwww-form-urlencoded request data.
+app.use(bodyParser.urlencoded({extended: true}));
+
+// Enable user session handling.
+app.use(sessionMiddleware);
+
+// Set up passport and session handling.
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Middleware that adds the user of this session as a local variable,
+// so it can be displayed on all pages when logged in.
+app.use((req, res, next) => {
+  res.locals.name = '-';
+  if (req.user && req.user.profile && req.user.profile.name) {
+    res.locals.name =
+        req.user.profile.name.givenName || req.user.profile.displayName;
+  }
+
+  res.locals.avatarUrl = '';
+  if (req.user && req.user.profile && req.user.profile.photos) {
+    res.locals.avatarUrl = req.user.profile.photos[0].value;
+  }
+  next();
+});
+
+// GET request to the root.
+// Display the login screen if the user is not logged in yet, otherwise the
+// photo frame.
+app.get('/', (req, res) => {
+  if (!req.user || !req.isAuthenticated()) {
+    // Not logged in yet.
+    console.log("You are logged in")
+  } else {
+    console.log("You are not logged in")
+  }
+});
 
 app.listen(PORT, () => {
     console.log('Server started on port ', PORT);
