@@ -18,6 +18,11 @@
   },
   "homepage": "https://github.com/davetheflashguy/google-photos-app#readme",
   "dependencies": {
-    "express": "^4.16.4"
+    "async": "^2.6.1",
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "express-winston": "^3.0.1",
+    "node-persist": "^3.0.1",
+    "winston": "^3.1.0"
   }
 }
