@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/davetheflashguy/google-photos-app/issues"
   },
-  "homepage": "https://github.com/davetheflashguy/google-photos-app#readme"
+  "homepage": "https://github.com/davetheflashguy/google-photos-app#readme",
+  "dependencies": {
+    "express": "^4.16.4"
+  }
 }
