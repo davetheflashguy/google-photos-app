@@ -1,5 +1,7 @@
 const config = require('./config/config.js');
 const express = require('express');
+const session = require('express-session');
+const sessionFileStore = require('session-file-store');
 const async = require('async');
 const bodyParser = require('body-parser');
 const expressWinston = require('express-winston');
@@ -7,7 +9,8 @@ const http = require('http');
 const persist = require('node-persist');
 const winston = require('winston');
 
-let app = express();
+const app = express();
+const fileStore = sessionFileStore(session);
 const PORT  = process.env.PORT || '8080'; // needs to match google api callback config
 
 // Set up a cache for media items that expires after 55 minutes.
@@ -55,6 +58,50 @@ storage.init();
 const passport = require('passport');
 const auth = require('./auth');
 auth(passport);
+
+// Set up a session middleware to handle user sessions.
+// NOTE: A secret is used to sign the cookie. This is just used for this sample
+// app and should be changed.
+const sessionMiddleware = session({
+  resave: true,
+  saveUninitialized: true,
+  store: new fileStore({}),
+  secret: 'photo frame sample',
+});
+
+// Console transport for winton.
+const consoleTransport = new winston.transports.Console();
+
+// Set up winston logging.
+const logger = winston.createLogger({
+  format: winston.format.combine(
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+  transports: [
+    consoleTransport
+  ]
+});
+
+// Enable extensive logging if the DEBUG environment variable is set.
+if (process.env.DEBUG) {
+  // Print all winston log levels.
+  logger.level = 'silly';
+
+  // Enable express.js debugging. This logs all received requests.
+  app.use(expressWinston.logger({
+    transports: [
+          consoleTransport
+        ],
+        winstonInstance: logger
+  }));
+  // Enable request debugging.
+  require('request-promise').debug = true;
+} else {
+  // By default, only print all 'verbose' log level messages or below.
+  logger.level = 'verbose';
+}
+
 
 app.listen(PORT, () => {
     console.log('Server started on port ', PORT);
