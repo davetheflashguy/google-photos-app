@@ -137,11 +137,63 @@ app.use((req, res, next) => {
 app.get('/', (req, res) => {
   if (!req.user || !req.isAuthenticated()) {
     // Not logged in yet.
-    console.log("You are logged in")
+    console.log("You are not logged in yet")
+    window.location = "/auth/google";
   } else {
     console.log("You are not logged in")
   }
 });
+
+
+// GET request to log out the user.
+// Destroy the current session and redirect back to the log in screen.
+app.get('/logout', (req, res) => {
+  req.logout();
+  req.session.destroy();
+  res.redirect('/');
+});
+
+// Star the OAuth login process for Google.
+app.get('/auth/google', passport.authenticate('google', {
+  scope: config.scopes,
+  failureFlash: true,  // Display errors to the user.
+  session: true,
+}));
+
+// Callback receiver for the OAuth process after log in.
+app.get(
+    '/auth/google/callback',
+    passport.authenticate(
+        'google', {failureRedirect: '/', failureFlash: true, session: true}),
+    (req, res) => {
+      // User has logged in.
+      logger.info('User has logged in.');
+      res.redirect('/');
+    });
+
+// Loads the search page if the user is authenticated.
+// This page includes the search form.
+app.get('/search', (req, res) => {
+  renderIfAuthenticated(req, res, 'pages/search');
+});
+
+// Loads the album page if the user is authenticated.
+// This page displays a list of albums owned by the user.
+app.get('/album', (req, res) => {
+  renderIfAuthenticated(req, res, 'pages/album');
+});
+
+// Renders the given page if the user is authenticated.
+// Otherwise, redirects to "/".
+function renderIfAuthenticated(req, res, page) {
+  if (!req.user || !req.isAuthenticated()) {
+    //res.redirect('/');
+    console.log('/')
+  } else {
+    console.log('page: ', page);
+    //res.render(page);
+  }
+}
 
 app.listen(PORT, () => {
     console.log('Server started on port ', PORT);
